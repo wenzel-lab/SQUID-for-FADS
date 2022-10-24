@@ -551,13 +551,14 @@ void setup() {
   pinMode(DAC8050x_CS_pin,OUTPUT);
   digitalWrite(DAC8050x_CS_pin,HIGH);
 
+/*
   // wait for PG to turn high
   delay(100);
   while(!digitalRead(pin_PG))
   {
     delay(50);
   }
-
+*/
   /*********************************************************************************************************
    ************************************** TMC4361A + TMC2660 beginning ************************************* 
    *********************************************************************************************************/
@@ -594,8 +595,8 @@ void setup() {
   tmc4361A_enableLimitSwitch(&tmc4361[x], rht_sw_pol[x], RGHT_SW, flip_limit_switch_x);
   tmc4361A_enableLimitSwitch(&tmc4361[y], lft_sw_pol[y], LEFT_SW, flip_limit_switch_y);
   tmc4361A_enableLimitSwitch(&tmc4361[y], rht_sw_pol[y], RGHT_SW, flip_limit_switch_y);
-  tmc4361A_enableLimitSwitch(&tmc4361[z], rht_sw_pol[z], RGHT_SW, false);
-  tmc4361A_enableLimitSwitch(&tmc4361[z], lft_sw_pol[z], LEFT_SW, false); // removing this causes z homing to not work properly
+//  tmc4361A_enableLimitSwitch(&tmc4361[z], rht_sw_pol[z], RGHT_SW, false);
+//  tmc4361A_enableLimitSwitch(&tmc4361[z], lft_sw_pol[z], LEFT_SW, false); // removing this causes z homing to not work properly
   // tmc4361A_rstBits(&tmc4361[z],TMC4361A_REFERENCE_CONF,TMC4361A_STOP_LEFT_EN_MASK);
 
   // motion profile configuration
