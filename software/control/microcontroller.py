@@ -109,13 +109,22 @@ class Microcontroller():
         cmd[4] = int((intensity/100)*65535) & 0xff
         self.send_command(cmd)
 
-    def set_illumination_led_matrix(self,illumination_source,r,g,b):
+    def set_illumination_led_matrix(self,illumination_source,r,g,b,rows=None,columns=None):
         cmd = bytearray(self.tx_buffer_length)
         cmd[1] = CMD_SET.SET_ILLUMINATION_LED_MATRIX
         cmd[2] = illumination_source
         cmd[3] = min(int(r*255),255)
         cmd[4] = min(int(g*255),255)
         cmd[5] = min(int(b*255),255)
+        if rows and columns:
+            rows_lowest_8 = rows & 2**8-1
+            rows_highest_2 = (rows >> 8) & 2**2-1
+            cmd[6] = rows_lowest_8
+            cols_lowest_6 = columns & 2**6-1
+            cols_highest_4 = (columns >> 6) & 2**4-1
+            cmd[7] = rows_highest_2 + (cols_lowest_6 << 2)
+            cmd[8] = cols_highest_4
+
         self.send_command(cmd)
 
     def send_hardware_trigger(self,control_illumination=False,illumination_on_time_us=0,trigger_output_ch=0):

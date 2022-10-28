@@ -1479,9 +1479,13 @@ class MultiPointController(QObject):
         self.multiPointWorker.moveToThread(self.thread)
         # connect signals and slots
         self.thread.started.connect(self.multiPointWorker.run)
+        self.thread.started.connect(lambda: print('__ thread started'))
+
         self.multiPointWorker.finished.connect(self._on_acquisition_completed)
         self.multiPointWorker.finished.connect(self.multiPointWorker.deleteLater)
         self.multiPointWorker.finished.connect(self.thread.quit)
+        self.multiPointWorker.finished.connect(lambda: print('__multipointworker finished'))
+
         self.multiPointWorker.image_to_display.connect(self.slot_image_to_display)
         self.multiPointWorker.image_to_display_multi.connect(self.slot_image_to_display_multi)
         self.multiPointWorker.spectrum_to_display.connect(self.slot_spectrum_to_display)
@@ -1489,6 +1493,7 @@ class MultiPointController(QObject):
         self.multiPointWorker.signal_register_current_fov.connect(self.slot_register_current_fov)
         # self.thread.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self.thread.quit)
+        self.thread.finished.connect(lambda: print('__thread finished'))
         # start the thread
         self.thread.start()
 
