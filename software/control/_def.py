@@ -33,6 +33,24 @@ class Microcontroller2Def:
 
 USE_SEPARATE_MCU_FOR_DAC = False
 
+class MCU_PINS:
+    PWM1 = 5
+    PWM2 = 4
+    PWM3 = 22
+    PWM4 = 3
+    PWM5 = 23
+    PWM6 = 2
+    PWM7 = 1
+    PWM9 = 6
+    PWM10 = 7
+    PWM11 = 8
+    PWM12 = 9
+    PWM13 = 10
+    PWM14 = 15
+    PWM15 = 24
+    PWM16 = 25
+    AF_LASER = 15
+
 class CMD_SET:
     MOVE_X = 0
     MOVE_Y = 1
@@ -56,6 +74,7 @@ class CMD_SET:
     SET_OFFSET_VELOCITY = 24
     SEND_HARDWARE_TRIGGER = 30
     SET_STROBE_DELAY = 31
+    SET_PIN_LEVEL = 41
     INITIALIZE = 254
     RESET = 255
 
@@ -330,6 +349,17 @@ FOCUS_MEASURE_OPERATOR = 'LAPE' # 'GLVA' # LAPE has worked well for bright field
 
 # controller version
 CONTROLLER_VERSION = 'Arduino Due' # 'Teensy'
+
+# laser autofocus
+SUPPORT_LASER_AUTOFOCUS = False
+MAIN_CAMERA_MODEL = 'MER2-1220-32U3M'
+FOCUS_CAMEARA_MODEL = 'MER2-630-60U3M'
+FOCUS_CAMERA_EXPOSURE_TIME_MS = 2
+FOCUS_CAMERA_ANALOG_GAIN = 0
+LASER_AF_AVERAGING_N = 1
+LASER_AF_DISPLAY_SPOT_IMAGE = True
+LASER_AF_CROP_WIDTH = 1024
+LASER_AF_CROP_HEIGHT = 256
 
 ##########################################################
 #### start of loading machine specific configurations ####

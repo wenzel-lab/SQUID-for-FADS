@@ -9,6 +9,18 @@ except:
 
 from control._def import *
 
+def get_sn_by_model(model_name):
+    try:
+        device_manager = gx.DeviceManager()
+        device_num, device_info_list = device_manager.update_device_list()
+    except:
+        device_num = 0
+    if device_num > 0:
+        for i in range(device_num):
+            if device_info_list[i]['model_name'] == model_name:
+                return device_info_list[i]['sn']
+    return None # return None if no device with the specified model_name is connected
+
 class Camera(object):
 
     def __init__(self,sn=None,is_global_shutter=False,rotate_image_angle=None,flip_image=None):
@@ -96,33 +108,40 @@ class Camera(object):
         self.new_image_callback_external = function
 
     def enable_callback(self):
-        # stop streaming
-        if self.is_streaming:
-            was_streaming = True
-            self.stop_streaming()
+        if self.callback_is_enabled == False:
+            # stop streaming
+            if self.is_streaming:
+                was_streaming = True
+                self.stop_streaming()
+            else:
+                was_streaming = False
+            # enable callback
+            user_param = None
+            self.camera.register_capture_callback(user_param,self._on_frame_callback)
+            self.callback_is_enabled = True
+            # resume streaming if it was on
+            if was_streaming:
+                self.start_streaming()
+            self.callback_is_enabled = True
         else:
-            was_streaming = False
-        # enable callback
-        user_param = None
-        self.camera.register_capture_callback(user_param,self._on_frame_callback)
-        self.callback_is_enabled = True
-        # resume streaming if it was on
-        if was_streaming:
-            self.start_streaming()
+            pass
 
     def disable_callback(self):
-        # stop streaming
-        if self.is_streaming:
-            was_streaming = True
-            self.stop_streaming()
+        if self.callback_is_enabled == True:
+            # stop streaming
+            if self.is_streaming:
+                was_streaming = True
+                self.stop_streaming()
+            else:
+                was_streaming = False
+            # disable call back
+            self.camera.unregister_capture_callback()
+            self.callback_is_enabled = False
+            # resume streaming if it was on
+            if was_streaming:
+                self.start_streaming()
         else:
-            was_streaming = False
-        # disable call back
-        self.camera.unregister_capture_callback()
-        self.callback_is_enabled = False
-        # resume streaming if it was on
-        if was_streaming:
-            self.start_streaming()
+            pass
 
     def open_by_sn(self,sn):
         (device_num, self.device_info_list) = self.device_manager.update_device_list()
@@ -459,6 +478,8 @@ class Camera_Simulation(object):
         self.strobe_delay_us = self.exposure_delay_us + self.row_period_us*self.pixel_size_byte*(self.row_numbers-1)
 
         self.pixel_format = 'MONO8'
+
+        self.is_live = False
 
     def open(self,index=0):
         pass
