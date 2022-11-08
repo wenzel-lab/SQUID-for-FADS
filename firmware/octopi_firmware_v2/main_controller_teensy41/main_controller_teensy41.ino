@@ -58,6 +58,7 @@ static const int SET_OFFSET_VELOCITY = 24;
 static const int SEND_HARDWARE_TRIGGER = 30;
 static const int SET_STROBE_DELAY = 31;
 static const int SET_PIN_LEVEL = 41;
+static const int SET_INDIVIDUAL_LED_MATRIX = 99;
 static const int INITIALIZE = 254;
 static const int RESET = 255;
 
@@ -1246,6 +1247,62 @@ void loop() {
         case SET_ILLUMINATION_LED_MATRIX:
         {
           set_illumination_led_matrix(buffer_rx[2],buffer_rx[3],buffer_rx[4],buffer_rx[5]);
+          break;
+        }
+        case SET_INDIVIDUAL_LED_MATRIX:
+        {
+              illumination_is_on = true;
+  // clear matrix
+  set_all(matrix, 0, 0, 0);
+
+float r = (float(buffer_rx[2])/255)*LED_MATRIX_MAX_INTENSITY;
+float g = (float(buffer_rx[3])/255)*LED_MATRIX_MAX_INTENSITY;
+float b = (float(buffer_rx[4])/255)*LED_MATRIX_MAX_INTENSITY;
+uint8_t rows = buffer_rx[5];
+uint8_t columns = buffer_rx[6];
+
+
+// to demonstrate organization of indices (not left to right but alternating lr <> rl)
+//for (int i=0;i<16;i++){
+//  matrix[i+16].setRGB(r*i/16, g, b);
+//}
+
+  for (int row=0;row<8;row++)
+  {
+    if ((rows & int(pow(2, row))) == 0) continue;
+    for (int column=0;column<8;column++){
+      if ((columns & int(pow(2, column))) == 0) continue;
+      matrix[row*12+column+2+16].setRGB(r,g,b);
+    }
+  }
+
+// draws entire row in rows
+//  for (int row=0;row<8;row++)
+//  {
+//    if ((rows & int(pow(2, row))) == 0) {
+//      continue;
+//    }
+//    for (int column=0;column<8;column++){
+//      matrix[row*12+column+2+16].setRGB(r,g,b);
+//    }
+//  }
+
+// setting based on input
+//  matrix[rows*12+columns+2+16].setRGB(buffer_rx[2],buffer_rx[3],buffer_rx[4]);
+//  matrix[rows*12+columns+2+16].setRGB(buffer_rx[2],buffer_rx[3],buffer_rx[4]);
+
+// set positions (0,0) and (2,0) on inner 10x10 matrix correcting for margin LEDs
+//  matrix[0*12+0+2+16].setRGB(buffer_rx[2],buffer_rx[3],buffer_rx[4]);
+//  matrix[2*12+0+2+16].setRGB(buffer_rx[2],buffer_rx[3],buffer_rx[4]);
+
+// set some hard coded positions
+//  matrix[115].setRGB(buffer_rx[2],buffer_rx[3],buffer_rx[4]);
+//  matrix[116].setRGB(buffer_rx[2],buffer_rx[3],buffer_rx[4]);
+//  matrix[123].setRGB(buffer_rx[2],buffer_rx[3],buffer_rx[4]);
+//  matrix[124].setRGB(buffer_rx[2],buffer_rx[3],buffer_rx[4]);
+
+  FastLED.show();
+          
           break;
         }
         case ACK_JOYSTICK_BUTTON_PRESSED:
