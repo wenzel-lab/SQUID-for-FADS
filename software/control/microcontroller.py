@@ -5,7 +5,7 @@ import time
 import numpy as np
 import threading
 from crc import CrcCalculator, Crc8
-
+from datetime import datetime
 from control._def import *
 
 from qtpy.QtCore import *
@@ -92,6 +92,7 @@ class Microcontroller():
         print('initialize the drivers') # debug
 
     def turn_on_illumination(self):
+        # return
         cmd = bytearray(self.tx_buffer_length)
         cmd[1] = CMD_SET.TURN_ON_ILLUMINATION
         self.send_command(cmd)
@@ -109,7 +110,37 @@ class Microcontroller():
         cmd[4] = int((intensity/100)*65535) & 0xff
         self.send_command(cmd)
 
+    def set_individual_led_matrix(self, r, g, b, rows, columns):
+        print(datetime.now(), 'set_individual_led_matrix', r, g, b, rows, columns)
+        print({'r':r, 'g':g,'b':b,'rows':rows,'columns':columns})
+        cmd = bytearray(self.tx_buffer_length)
+        cmd[1] = CMD_SET.SET_INDIVIDUAL_LED_MATRIX
+        cmd[2] = min(int(r*255),255)
+        cmd[3] = min(int(g*255),255)
+        cmd[4] = min(int(b*255),255)
+        if rows and columns:
+            cmd[5] = rows
+            cmd[6] = columns
+            # rows_lowest_8 = rows & 2**8-1
+            # rows_highest_2 = (rows >> 8) & 2**2-1
+            # cmd[6] = rows_lowest_8
+            # cols_lowest_6 = columns & 2**6-1
+            # cols_highest_4 = (columns >> 6) & 2**4-1
+            # cmd[7] = rows_highest_2 + (cols_lowest_6 << 2)
+            # cmd[8] = cols_highest_4
+
+        self.send_command(cmd)
+
+
     def set_illumination_led_matrix(self,illumination_source,r,g,b,rows=None,columns=None):
+        # if illumination_source == 1:
+        #     self.set_individual_led_matrix(0, g, 0, 4, 8)
+        #     # self.set_individual_led_matrix(0, g, 0, 231, 231)
+        #     return
+        # elif illumination_source == 2:
+        #     self.set_individual_led_matrix(0, g, 0, 16, 16)
+        #     return
+        print(datetime.now(), 'set_illumination_led_matrix', illumination_source,r,g,b)
         cmd = bytearray(self.tx_buffer_length)
         cmd[1] = CMD_SET.SET_ILLUMINATION_LED_MATRIX
         cmd[2] = illumination_source
@@ -117,13 +148,15 @@ class Microcontroller():
         cmd[4] = min(int(g*255),255)
         cmd[5] = min(int(b*255),255)
         if rows and columns:
-            rows_lowest_8 = rows & 2**8-1
-            rows_highest_2 = (rows >> 8) & 2**2-1
-            cmd[6] = rows_lowest_8
-            cols_lowest_6 = columns & 2**6-1
-            cols_highest_4 = (columns >> 6) & 2**4-1
-            cmd[7] = rows_highest_2 + (cols_lowest_6 << 2)
-            cmd[8] = cols_highest_4
+            cmd[6] = rows
+            cmd[7] = columns
+            # rows_lowest_8 = rows & 2**8-1
+            # rows_highest_2 = (rows >> 8) & 2**2-1
+            # cmd[6] = rows_lowest_8
+            # cols_lowest_6 = columns & 2**6-1
+            # cols_highest_4 = (columns >> 6) & 2**4-1
+            # cmd[7] = rows_highest_2 + (cols_lowest_6 << 2)
+            # cmd[8] = cols_highest_4
 
         self.send_command(cmd)
 
@@ -570,6 +603,7 @@ class Microcontroller():
         self.set_pin_level(MCU_PINS.AF_LASER,0)
 
     def send_command(self,command):
+        print(datetime.now(), 'command', command[1])
         self._cmd_id = (self._cmd_id + 1)%256
         command[0] = self._cmd_id
         command[-1] = self.crc_calculator.calculate_checksum(command[:-1])

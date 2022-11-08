@@ -1,5 +1,5 @@
 # set QT_API environment variable
-import os 
+import os
 os.environ["QT_API"] = "pyqt5"
 import qtpy
 
@@ -1219,7 +1219,28 @@ class MultiPointWorker(QObject):
                             if 'USB Spectrometer' not in config.name:
                                 # update the current configuration
                                 self.signal_current_configuration.emit(config)
+                                # self.wait_till_operation_is_completed()
+
+                                """
+                                -----
+                                DO THE ACQUISITION
+                                -----
+                                """
+                                """
+                                ACTIVATE ILLUMINATION and TAKE IMAGE
+                                """
+                                # self.microcontroller.set_illumination_led_matrix(0, 0, 0.2, 0)  # GRB
+                                # self.microcontroller.set_individual_led_matrix(0, 0.2, 0, 5, 1)
                                 self.wait_till_operation_is_completed()
+                                # time.sleep(10)
+                                # self.microcontroller.set_individual_led_matrix(0, 0, 0.2, 40, 5)
+                                # self.wait_till_operation_is_completed()
+
+                                # for i in range(8):
+                                #     for j in range(8):
+                                #         self.microcontroller.set_individual_led_matrix(0.2, 0, 0, 2 ** i, 2 ** j)
+                                #         self.wait_till_operation_is_completed()
+                                #         time.sleep(0.2)
                                 # trigger acquisition (including turning on the illumination)
                                 if self.liveController.trigger_mode == TriggerMode.SOFTWARE:
                                     self.liveController.turn_on_illumination()
@@ -1227,11 +1248,18 @@ class MultiPointWorker(QObject):
                                     self.camera.send_trigger()
                                 elif self.liveController.trigger_mode == TriggerMode.HARDWARE:
                                     self.microcontroller.send_hardware_trigger(control_illumination=True,illumination_on_time_us=self.camera.exposure_time*1000)
-                                # read camera frame
+
+                                """
+                                TURN OFF ILLUMINATION
+                                """
                                 image = self.camera.read_frame()
                                 # tunr of the illumination if using software trigger
                                 if self.liveController.trigger_mode == TriggerMode.SOFTWARE:
                                     self.liveController.turn_off_illumination()
+
+                                """
+                                PROCESS IMAGE
+                                """
                                 # process the image -  @@@ to move to camera
                                 image = utils.crop_image(image,self.crop_width,self.crop_height)
                                 image = utils.rotate_and_flip_image(image,rotate_image_angle=self.camera.rotate_image_angle,flip_image=self.camera.flip_image)
@@ -1261,6 +1289,11 @@ class MultiPointWorker(QObject):
                                         else:
                                             image = cv2.cvtColor(image,cv2.COLOR_RGB2BGR)
                                     cv2.imwrite(saving_path,image)
+
+                                """
+                                END DO THE ACQUISITION
+                                """
+
                                 QApplication.processEvents()
                             else:
                                 if self.usb_spectrometer != None:
