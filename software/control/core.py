@@ -1218,7 +1218,7 @@ class MultiPointWorker(QObject):
                         for config in self.selected_configurations:
                             if 'USB Spectrometer' not in config.name:
                                 # update the current configuration
-                                self.signal_current_configuration.emit(config)
+                                # self.signal_current_configuration.emit(config)
                                 # self.wait_till_operation_is_completed()
 
                                 """
@@ -1231,68 +1231,69 @@ class MultiPointWorker(QObject):
                                 """
                                 # self.microcontroller.set_illumination_led_matrix(0, 0, 0.2, 0)  # GRB
                                 # self.microcontroller.set_individual_led_matrix(0, 0.2, 0, 5, 1)
-                                self.wait_till_operation_is_completed()
+                                # self.wait_till_operation_is_completed()
                                 # time.sleep(10)
                                 # self.microcontroller.set_individual_led_matrix(0, 0, 0.2, 40, 5)
                                 # self.wait_till_operation_is_completed()
 
-                                # for i in range(8):
-                                #     for j in range(8):
-                                #         self.microcontroller.set_individual_led_matrix(0.2, 0, 0, 2 ** i, 2 ** j)
-                                #         self.wait_till_operation_is_completed()
-                                #         time.sleep(0.2)
-                                # trigger acquisition (including turning on the illumination)
-                                if self.liveController.trigger_mode == TriggerMode.SOFTWARE:
-                                    self.liveController.turn_on_illumination()
-                                    self.wait_till_operation_is_completed()
-                                    self.camera.send_trigger()
-                                elif self.liveController.trigger_mode == TriggerMode.HARDWARE:
-                                    self.microcontroller.send_hardware_trigger(control_illumination=True,illumination_on_time_us=self.camera.exposure_time*1000)
+                                for i in range(8):
+                                    for j in range(8):
+                                        self.microcontroller.set_individual_led_matrix(0.2, 0, 0, 2 ** i, 2 ** j)
+                                        self.wait_till_operation_is_completed()
+                                        time.sleep(0.2)
+                                        # trigger acquisition (including turning on the illumination)
+                                        if self.liveController.trigger_mode == TriggerMode.SOFTWARE:
+                                            # self.liveController.turn_on_illumination()
+                                            # self.wait_till_operation_is_completed()
+                                            self.camera.send_trigger()
+                                        elif self.liveController.trigger_mode == TriggerMode.HARDWARE:
+                                            self.microcontroller.send_hardware_trigger(control_illumination=True,illumination_on_time_us=self.camera.exposure_time*1000)
 
-                                """
-                                TURN OFF ILLUMINATION
-                                """
-                                image = self.camera.read_frame()
-                                # tunr of the illumination if using software trigger
-                                if self.liveController.trigger_mode == TriggerMode.SOFTWARE:
-                                    self.liveController.turn_off_illumination()
+                                        """
+                                        TURN OFF ILLUMINATION
+                                        """
+                                        image = self.camera.read_frame()
+                                        # tunr of the illumination if using software trigger
+                                        if self.liveController.trigger_mode == TriggerMode.SOFTWARE:
+                                            self.liveController.turn_off_illumination()
 
-                                """
-                                PROCESS IMAGE
-                                """
-                                # process the image -  @@@ to move to camera
-                                image = utils.crop_image(image,self.crop_width,self.crop_height)
-                                image = utils.rotate_and_flip_image(image,rotate_image_angle=self.camera.rotate_image_angle,flip_image=self.camera.flip_image)
-                                # self.image_to_display.emit(cv2.resize(image,(round(self.crop_width*self.display_resolution_scaling), round(self.crop_height*self.display_resolution_scaling)),cv2.INTER_LINEAR))
-                                image_to_display = utils.crop_image(image,round(self.crop_width*self.display_resolution_scaling), round(self.crop_height*self.display_resolution_scaling))
-                                self.image_to_display.emit(image_to_display)
-                                self.image_to_display_multi.emit(image_to_display,config.illumination_source)
-                                if image.dtype == np.uint16:
-                                    saving_path = os.path.join(current_path, file_ID + '_' + str(config.name).replace(' ','_') + '.tiff')
-                                    if self.camera.is_color:
-                                        if 'BF LED matrix' in config.name:
-                                            if MULTIPOINT_BF_SAVING_OPTION == 'RGB2GRAY':
-                                                image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
-                                            elif MULTIPOINT_BF_SAVING_OPTION == 'Green Channel Only':
-                                                image = image[:,:,1]
-                                    iio.imwrite(saving_path,image)
-                                else:
-                                    saving_path = os.path.join(current_path, file_ID + '_' + str(config.name).replace(' ','_') + '.' + Acquisition.IMAGE_FORMAT)
-                                    if self.camera.is_color:
-                                        if 'BF LED matrix' in config.name:
-                                            if MULTIPOINT_BF_SAVING_OPTION == 'Raw':
-                                                image = cv2.cvtColor(image,cv2.COLOR_RGB2BGR)
-                                            elif MULTIPOINT_BF_SAVING_OPTION == 'RGB2GRAY':
-                                                image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
-                                            elif MULTIPOINT_BF_SAVING_OPTION == 'Green Channel Only':
-                                                image = image[:,:,1]
+                                        """
+                                        PROCESS IMAGE
+                                        """
+                                        # process the image -  @@@ to move to camera
+                                        image = utils.crop_image(image,self.crop_width,self.crop_height)
+                                        image = utils.rotate_and_flip_image(image,rotate_image_angle=self.camera.rotate_image_angle,flip_image=self.camera.flip_image)
+                                        # self.image_to_display.emit(cv2.resize(image,(round(self.crop_width*self.display_resolution_scaling), round(self.crop_height*self.display_resolution_scaling)),cv2.INTER_LINEAR))
+                                        image_to_display = utils.crop_image(image,round(self.crop_width*self.display_resolution_scaling), round(self.crop_height*self.display_resolution_scaling))
+                                        self.image_to_display.emit(image_to_display)
+                                        self.image_to_display_multi.emit(image_to_display,config.illumination_source)
+                                        print('image.dtype:', image.dtype)
+                                        if image.dtype == np.uint16:
+                                            saving_path = os.path.join(current_path, file_ID + '_' + str(config.name).replace(' ','_') + '.tiff')
+                                            if self.camera.is_color:
+                                                if 'BF LED matrix' in config.name:
+                                                    if MULTIPOINT_BF_SAVING_OPTION == 'RGB2GRAY':
+                                                        image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
+                                                    elif MULTIPOINT_BF_SAVING_OPTION == 'Green Channel Only':
+                                                        image = image[:,:,1]
+                                            iio.imwrite(saving_path,image)
                                         else:
-                                            image = cv2.cvtColor(image,cv2.COLOR_RGB2BGR)
-                                    cv2.imwrite(saving_path,image)
+                                            saving_path = os.path.join(current_path, str(i*8+j) + '_' + file_ID + '_' + str(config.name).replace(' ','_') + '.' + Acquisition.IMAGE_FORMAT)
+                                            if self.camera.is_color:
+                                                if 'BF LED matrix' in config.name:
+                                                    if MULTIPOINT_BF_SAVING_OPTION == 'Raw':
+                                                        image = cv2.cvtColor(image,cv2.COLOR_RGB2BGR)
+                                                    elif MULTIPOINT_BF_SAVING_OPTION == 'RGB2GRAY':
+                                                        image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
+                                                    elif MULTIPOINT_BF_SAVING_OPTION == 'Green Channel Only':
+                                                        image = image[:,:,1]
+                                                else:
+                                                    image = cv2.cvtColor(image,cv2.COLOR_RGB2BGR)
+                                            cv2.imwrite(saving_path,image)
 
-                                """
-                                END DO THE ACQUISITION
-                                """
+                                        """
+                                        END DO THE ACQUISITION
+                                        """
 
                                 QApplication.processEvents()
                             else:
