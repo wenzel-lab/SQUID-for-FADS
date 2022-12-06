@@ -27,6 +27,9 @@ class Microcontroller():
         self.tx_buffer_length = MicrocontrollerDef.CMD_LENGTH
         self.rx_buffer_length = MicrocontrollerDef.MSG_LENGTH
 
+        self.mapping_individual_leds = True
+        self.setting_individual_leds = True
+
         self._cmd_id = 0
         self._cmd_id_mcu = None # command id of mcu's last received command 
         self._cmd_execution_status = None
@@ -92,7 +95,8 @@ class Microcontroller():
         print('initialize the drivers') # debug
 
     def turn_on_illumination(self):
-        # return
+        if self.mapping_individual_leds:
+            return
         cmd = bytearray(self.tx_buffer_length)
         cmd[1] = CMD_SET.TURN_ON_ILLUMINATION
         self.send_command(cmd)
@@ -133,13 +137,35 @@ class Microcontroller():
 
 
     def set_illumination_led_matrix(self,illumination_source,r,g,b,rows=None,columns=None):
-        # if illumination_source == 1:
-        #     self.set_individual_led_matrix(0, g, 0, 4, 8)
-        #     # self.set_individual_led_matrix(0, g, 0, 231, 231)
-        #     return
-        # elif illumination_source == 2:
-        #     self.set_individual_led_matrix(0, g, 0, 16, 16)
-        #     return
+        if self.setting_individual_leds:
+            self.mapping_individual_leds = True
+            if illumination_source == 1:
+                self.set_individual_led_matrix(0, g, 0, 4, 8)
+                # self.set_individual_led_matrix(0, g, 0, 231, 231)
+                return
+            elif illumination_source == 2:
+                """CENTRAL LED"""
+                self.set_individual_led_matrix(0, g, 0, 2**3, 2**3)
+                return
+            elif illumination_source == 3:
+                """DIAGONALLY ADJACENT LEDS TO CENTER LED"""
+                self.set_individual_led_matrix(0, g, 0, 2**2+2**4, 2**3+2**5)
+                return
+            elif illumination_source == 4:
+                """LEFT AND RIGHT NEIGHBORS OF CENTER LED"""
+                self.set_individual_led_matrix(0, g, 0, 2**2+2**4, 2**4)
+                return
+            elif illumination_source == 5:
+                """LEFT AND RIGHT NEIGHBORS OF CENTER LED"""
+                self.set_individual_led_matrix(0, g, 0, 2**3, 2**2+2**4)
+                return
+            elif illumination_source == 6:
+                self.set_individual_led_matrix(0, g, 0, 2**3+2**4, 2**3+2**4)
+                return
+
+            else:
+                self.mapping_individual_leds = False
+
         print(datetime.now(), 'set_illumination_led_matrix', illumination_source,r,g,b)
         cmd = bytearray(self.tx_buffer_length)
         cmd[1] = CMD_SET.SET_ILLUMINATION_LED_MATRIX
@@ -150,13 +176,6 @@ class Microcontroller():
         if rows and columns:
             cmd[6] = rows
             cmd[7] = columns
-            # rows_lowest_8 = rows & 2**8-1
-            # rows_highest_2 = (rows >> 8) & 2**2-1
-            # cmd[6] = rows_lowest_8
-            # cols_lowest_6 = columns & 2**6-1
-            # cols_highest_4 = (columns >> 6) & 2**4-1
-            # cmd[7] = rows_highest_2 + (cols_lowest_6 << 2)
-            # cmd[8] = cols_highest_4
 
         self.send_command(cmd)
 
