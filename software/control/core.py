@@ -1238,7 +1238,7 @@ class MultiPointWorker(QObject):
 
                                 for i in range(8):
                                     for j in range(8):
-                                        self.microcontroller.set_individual_led_matrix(0.2, 0, 0, 2 ** i, 2 ** j)
+                                        self.microcontroller.set_individual_led_matrix(0, 0, 1, 2 ** i, 2 ** j)
                                         self.wait_till_operation_is_completed()
                                         time.sleep(0.2)
                                         # trigger acquisition (including turning on the illumination)
