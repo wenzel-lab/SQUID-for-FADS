@@ -1,4 +1,4 @@
-# SQUID V1 software setup for droplet sorting microfluidic chips 
+# SQUID V1 software setup for microfluidic droplet sorting
 This is the set-up and driver material for a custom SQUID / OCTOPI V1 (beta) setup that has been set-up in a custom arrangement as part of our microfluidic droplet cytometry and sorting laboratory instrument. It is used for z-positioning (focus) of the detector arm objective, and for x/y positioning of the sorting chip on a 6cm movement range stage.
 
 ![our squid set-up Oct 2023](squid-droplet-cytometer.png)
